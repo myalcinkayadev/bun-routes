@@ -1,0 +1,46 @@
+{
+	"name": "bun-routes",
+	"version": "0.1.0",
+	"description": "Bun Routes is a lightweight, type-safe router built for Bun with zero dependencies",
+	"type": "module",
+	"license": "MIT",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"files": [
+		"dist/index.js",
+		"dist/index.d.ts",
+		"dist/route.js",
+		"dist/route.d.ts",
+		"dist/routes.js",
+		"dist/routes.d.ts",
+		"dist/middleware.js",
+		"dist/middleware.d.ts"
+	],
+	"scripts": {
+		"test": "bun test",
+		"lint": "bunx biome lint --write ./src",
+		"lint:check": "bunx biome lint --error-on-warnings ./src",
+		"format": "bunx biome format --write ./src",
+		"format:check": "bunx biome format ./src",
+		"build": "tsc",
+		"clean": "rm -rf ./dist"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"author": {
+		"name": "myalcinkayadev",
+		"email": "mehmetyalcinkaya042@gmail.com"
+	},
+	"keywords": ["bun", "router", "bun-route", "bun-routes", "typescript"],
+	"homepage": "https://github.com/myalcinkayadev/bun-routes",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/myalcinkayadev/bun-routes.git"
+	},
+	"bugs": "https://github.com/myalcinkayadev/bun-routes/issues"
+}
