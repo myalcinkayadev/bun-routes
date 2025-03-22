@@ -8,7 +8,7 @@ import type { RouterTypes } from "bun";
 export interface RouteOptions<T extends string> {
 	/**
 	 * Indicates whether the route should be exposed.
-	 * If false, the route will return a default 404 response.
+	 * Defaults to true. If false, the route will return a default 404 response.
 	 */
 	expose?: boolean;
 	/**
@@ -26,7 +26,6 @@ export interface RouteOptions<T extends string> {
 /**
  * Creates a route tuple with the provided options and final handler.
  * If the route is not exposed, returns a default 404 handler.
- * If middlewares are provided, they are composed with the final handler.
  *
  * @param options - Route configuration options.
  * @param handler - The final route handler.
@@ -36,7 +35,7 @@ export function route<T extends string>(
 	options: RouteOptions<T>,
 	handler: RouterTypes.RouteHandler<T>,
 ): [T, RouterTypes.RouteHandlerObject<T>] {
-	const { method, path, expose } = options;
+	const { method, path, expose = true } = options;
 
 	if (!expose) {
 		return [path, { [method]: () => new Response(null, { status: 404 }) }];

@@ -1,6 +1,6 @@
 {
 	"name": "bun-routes",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Bun Routes is a lightweight, type-safe router built for Bun with zero dependencies",
 	"type": "module",
 	"license": "MIT",
