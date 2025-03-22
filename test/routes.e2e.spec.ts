@@ -4,22 +4,22 @@ import { createRoutes, route } from "../src";
 
 describe("routes - e2e", () => {
 	const helloRoute = route(
-		{ expose: true, method: "GET", path: "/hello/:id" },
+		{ method: "GET", path: "/hello/:id" },
 		(req) => new Response(`Hello ${req.params.id}`),
 	);
 
 	const userGetRoute = route(
-		{ expose: true, method: "GET", path: "/users/:id" },
+		{ method: "GET", path: "/users/:id" },
 		(req) => new Response(`User ${req.params.id}`),
 	);
 
 	const userPostRoute = route(
-		{ expose: true, method: "POST", path: "/users" },
+		{ method: "POST", path: "/users" },
 		() => new Response("User created"),
 	);
 
 	const userPatchRoute = route(
-		{ expose: true, method: "PATCH", path: "/users/:id" },
+		{ method: "PATCH", path: "/users/:id" },
 		(req) => new Response(`User updated: ${req.params.id}`),
 	);
 
@@ -63,7 +63,7 @@ describe("routes - e2e", () => {
 		expect(text).toBe("User created");
 	});
 
-	test("E2E: PATCH /users/:id returns expected update response", async () => {
+	test("PATCH /users/:id returns expected update response", async () => {
 		const url = `http://localhost:${server.port}/users/myalcinkayadev`;
 		const res = await fetch(url, { method: "PATCH" });
 		expect(res.status).toBe(200);

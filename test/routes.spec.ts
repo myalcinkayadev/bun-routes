@@ -10,10 +10,45 @@ describe("routes - unit", () => {
 			Response.json({ answer: 42 }),
 		);
 
-		const router = createRoutes().add(uniqueRoute);
+		const routes = createRoutes().add(uniqueRoute);
 
-		expect(() => router.add(duplicateRoute)).toThrowError(
+		expect(() => routes.add(duplicateRoute)).toThrowError(
 			"Route for POST /unique already exists",
 		);
+	});
+
+	test("adds a route and returns it via getRoutes", () => {
+		const routes = createRoutes();
+
+		const getRoute = route(
+			{ method: "GET", path: "/hello" },
+			() => new Response("Hello"),
+		);
+
+		routes.add(getRoute);
+
+		const result = routes.getRoutes();
+		expect(result["/hello"]).toBeDefined();
+		expect(result["/hello"].GET).toBeInstanceOf(Function);
+	});
+
+	test("can add multiple methods for the same path", () => {
+		const routes = createRoutes();
+
+		const getRoute = route(
+			{ method: "GET", path: "/things" },
+			() => new Response("GET things"),
+		);
+		const postRoute = route(
+			{ method: "POST", path: "/things" },
+			() => new Response("POST things"),
+		);
+
+		routes.add(getRoute);
+		routes.add(postRoute);
+
+		const result = routes.getRoutes();
+		expect(result["/things"].GET).toBeDefined();
+		expect(result["/things"].POST).toBeDefined();
 	});
 });
