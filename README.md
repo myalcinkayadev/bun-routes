@@ -11,6 +11,7 @@
 - ⚡ **Simple API:** Easy to use with familiar patterns.
 - 🔒 **Type-Safe:** Leverages native Bun types for complete type safety.
 - 🧘‍♂️ **Minimal & Unopinionated:** Just routing, nothing else.
+- 🧩 **Flexible:** Easily add middleware and handle different HTTP methods for each route.
 
 ## Installation
 ```bash
@@ -53,4 +54,104 @@ console.info(`🚀 Server is running on http://localhost:${server.port}`);
 | **Modularity**           | Less modular; all routes are defined in one large object             | Highly modular; routes are encapsulated as individual objects                                 |
 | **Maintainability**      | Can become unwieldy as the number of routes grows                    | Easier to maintain, especially in larger applications                                          |
 | **HTTP Method Handling** | Less explicit when managing multiple methods on the same route       | Clearly declares HTTP methods for each route                                                  |
-| **Extensibility**        | Limited integration for middleware and additional features (currently)           | Enhanced flexibility for middleware and route-specific processing (soon)                              |
+| **Extensibility**        | Limited integration for middleware and additional features (currently)           | Enhanced flexibility for middleware and route-specific processing                              |
+
+## Middleware Example
+```typescript
+import { createRoutes, route, middleware } from "bun-routes";
+
+// Simulated in-memory cache for demonstration
+const responseCache = new Map<string, Response>();
+
+const logger = middleware(async (req, _server, next) => {
+  const startTime = Date.now();
+  console.log(
+    `[${new Date().toISOString()}] Request started: ${req.method} ${req.url}`,
+  );
+
+  const result = await next();
+
+  const duration = Date.now() - startTime;
+  console.log(
+    `[${new Date().toISOString()}] Request completed: ${req.method} ${req.url} in ${duration}ms`,
+  );
+  return result;
+});
+
+const auth = middleware((req, _server, next) => {
+  const authHeader = req.headers.get("Authorization");
+  const isAuthorized = authHeader === "Bearer secret";
+
+  if (!isAuthorized) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  return next();
+});
+
+const cache = middleware(async (req, _server, next) => {
+  const cacheKey = `${req.method}:${req.url}`;
+  console.log(`Checking cache for ${cacheKey}`);
+
+  const cachedResponse = responseCache.get(cacheKey);
+  if (cachedResponse) {
+    console.log(`Cache hit for ${cacheKey}`);
+    return cachedResponse.clone();
+  }
+
+  // Process the next middleware/handler
+  const response = await next();
+
+  // Cache the response if it’s successful
+  if (response.ok) {
+    console.log(`Caching response for ${cacheKey}`);
+    responseCache.set(cacheKey, response.clone()); // Clone to store independently
+  } else {
+    console.log(`Not caching failed response for ${cacheKey}`);
+  }
+
+  return response;
+});
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+async function fetchUserDetails(userId: string): Promise<User> {
+  // Simulate async DB call
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  return {
+    id: userId,
+    name: "John Doe",
+    email: "john@example.com",
+  };
+}
+
+// Secure route with enhanced logic
+const secureRoute = route(
+  {
+    method: "GET",
+    path: "/secure/:id/details",
+    middlewares: [auth, logger, cache],
+  },
+  async (req) => {
+    const userId = req.params.id;
+
+    try {
+      // Fetch user details asynchronously
+      const userDetails = await fetchUserDetails(userId);
+
+      return Response.json({ user: userDetails });
+    } catch (error) {
+      console.error(`Error fetching user details for ID ${userId}:`, error);
+      return Response.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+  },
+);
+```
