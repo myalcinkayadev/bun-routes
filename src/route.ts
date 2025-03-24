@@ -1,4 +1,5 @@
 import type { RouterTypes } from "bun";
+import { composeMiddlewares, type Middleware } from "./middleware";
 
 /**
  * Options for creating a route.
@@ -21,6 +22,11 @@ export interface RouteOptions<T extends string> {
 	 * This can include dynamic parameters (e.g., "/users/:id").
 	 */
 	path: T;
+
+	/**
+	 * An optional array of middleware functions to execute before the route handler.
+	 */
+	middlewares?: readonly Middleware<`${string}`>[];
 }
 
 /**
@@ -35,11 +41,14 @@ export function route<T extends string>(
 	options: RouteOptions<T>,
 	handler: RouterTypes.RouteHandler<T>,
 ): [T, RouterTypes.RouteHandlerObject<T>] {
-	const { method, path, expose = true } = options;
+	const { method, path, expose = true, middlewares = [] } = options;
 
 	if (!expose) {
 		return [path, { [method]: () => new Response(null, { status: 404 }) }];
 	}
 
-	return [path, { [method]: handler }];
+	const composedHandler =
+		middlewares.length > 0 ? composeMiddlewares(middlewares, handler) : handler;
+
+	return [path, { [method]: composedHandler }];
 }

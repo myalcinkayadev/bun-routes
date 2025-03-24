@@ -11,6 +11,7 @@
 - ⚡ **Simple API:** Easy to use with familiar patterns.
 - 🔒 **Type-Safe:** Leverages native Bun types for complete type safety.
 - 🧘‍♂️ **Minimal & Unopinionated:** Just routing, nothing else.
+- 🧩 **Flexible:** Easily add middleware and handle different HTTP methods for each route.
 
 ## Installation
 ```bash
@@ -53,4 +54,40 @@ console.info(`🚀 Server is running on http://localhost:${server.port}`);
 | **Modularity**           | Less modular; all routes are defined in one large object             | Highly modular; routes are encapsulated as individual objects                                 |
 | **Maintainability**      | Can become unwieldy as the number of routes grows                    | Easier to maintain, especially in larger applications                                          |
 | **HTTP Method Handling** | Less explicit when managing multiple methods on the same route       | Clearly declares HTTP methods for each route                                                  |
-| **Extensibility**        | Limited integration for middleware and additional features (currently)           | Enhanced flexibility for middleware and route-specific processing (soon)                              |
+| **Extensibility**        | Limited integration for middleware and additional features (currently)           | Enhanced flexibility for middleware and route-specific processing                              |
+
+## Middleware Example
+```typescript
+import { route, Middleware } from "bun-routes";
+
+	const logger: Middleware<string> = async (req, _server, next) => {
+		console.log("Request URL:", req.url);
+		return next();
+	};
+
+	const authMiddleware: Middleware<string> = async (req, _server, next) => {
+		if (!req.headers.get("Authorization")) {
+			return new Response("Unauthorized", { status: 401 });
+		}
+		return next();
+	};
+
+const auth: Middleware = async (req, server, next) => {
+  const authorized = req.headers.get("Authorization") === "Bearer secret";
+  if (!authorized) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  return next();
+};
+
+// Route using middleware
+const secureRoute = route(
+  {
+    expose: true,
+    method: "GET",
+    path: "/secure/:id",
+    middlewares: [loggerMiddleware, authMiddleware],
+  },
+  (req) => Response.json({ secure: true, userId: req.params.id })
+);
+```
